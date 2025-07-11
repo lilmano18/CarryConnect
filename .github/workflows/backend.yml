@@ -42,7 +42,6 @@ jobs:
             cat test_output.log
             exit 1
           else
-            cat test_output.log
             echo \"Tests passed.\"
+            cat test_output.log
           fi
-    
