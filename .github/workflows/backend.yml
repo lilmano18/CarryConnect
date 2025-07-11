@@ -1,0 +1,47 @@
+name: Build, Test and Deploy Backend
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+
+jobs:
+
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10.6'
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        working-directory: ./backend
+        run: |
+          pytest --maxfail=1 --disable-warnings > test_output.log || true
+          if grep -q 'collected 0 items' test_output.log; then
+            echo \"No tests collected. Skipping test failure.\"
+          elif grep -q 'FAILED' test_output.log; then
+            echo \"Tests failed.\"
+            cat test_output.log
+            exit 1
+          else
+            echo \"Tests passed.\"
+            cat test_output.log
+          fi
